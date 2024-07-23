@@ -145,11 +145,11 @@ export default function Home() {
         </button>
       </form>
 
-      <div className="text-neutral-400 dark:text-neutral-600 pt-4 text-center max-w-xl text-balance min-h-28 space-y-4">
+      <div className="text-neutral-300 dark:text-neutral-400 pt-4 text-center max-w-xl text-balance min-h-28 space-y-4">
         {messages.length > 0 ? (
           <p>
             {messages.at(-1)?.content}
-            <span className="text-xs font-mono text-neutral-300 dark:text-neutral-700">
+            <span className="text-xs font-mono text-neutral-300 dark:text-neutral-400">
               {" "}
               ({messages.at(-1)?.latency}ms)
             </span>
