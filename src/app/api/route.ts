@@ -1,14 +1,13 @@
 import Groq from "groq-sdk";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
-import { headers } from "next/headers";
+import { unstable_after as after } from "next/server";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const groq = new Groq();
 
 const schema = zfd.formData({
-  input: zfd.text(),
+  input: z.union([zfd.text(), zfd.file()]),
   message: zfd.repeatableOfType(
     zfd.json(
       z.object({
@@ -20,15 +19,34 @@ const schema = zfd.formData({
 });
 
 export async function POST(request: Request) {
+  console.time("transcribe " + request.headers.get("x-vercel-id") || "local");
+
   const { data, success } = schema.safeParse(await request.formData());
   if (!success) return new Response("Invalid request", { status: 400 });
+  
+  let transcript: string;
+  if (data.input instanceof File) {
+    const result = await getTranscript(data.input);
+    if (!result) return new Response("Invalid audio", { status: 400 });
+    transcript = result;
+  } else {
+    transcript = data.input;
+  }
 
-  const response = await groq.chat.completions.create({
+
+  console.timeEnd(
+    "transcribe " + request.headers.get("x-vercel-id") || "local"
+  );
+  console.time(
+    "text completion " + request.headers.get("x-vercel-id") || "local"
+  );
+
+  const completion = await groq.chat.completions.create({
     model: "llama3-8b-8192",
     messages: [
       {
         role: "system",
-        content: `- You are Echo, a friendly and helpful voice assistant.
+        content: `- You are Swift, a friendly and helpful voice assistant.
         - Respond briefly to the user's request, and do not provide unnecessary information.
         - If you don't understand the user's request, ask for clarification.
         - You do not have access to up-to-date information, so you should not provide real-time data.
@@ -43,16 +61,17 @@ export async function POST(request: Request) {
       ...data.message,
       {
         role: "user",
-        content: data.input,
+        content: transcript,
       },
     ],
   });
 
-  const content = response.choices[0]?.message?.content || "No response";
+  const response = completion.choices[0].message.content;
+  console.timeEnd(
+    "text completion " + request.headers.get("x-vercel-id") || "local"
+  );
 
-  return new Response(JSON.stringify({
-    text: content
-  }), {
+  return new Response(JSON.stringify({ text: response }), {
     headers: {
       "Content-Type": "application/json",
     },
@@ -75,4 +94,17 @@ function time() {
   return new Date().toLocaleString("en-US", {
     timeZone: headers().get("x-vercel-ip-timezone") || undefined,
   });
+}
+
+async function getTranscript(input: File) {
+  try {
+    const { text } = await groq.audio.transcriptions.create({
+      file: input,
+      model: "whisper-large-v3",
+    });
+
+    return text.trim() || null;
+  } catch {
+    return null;
+  }
 }

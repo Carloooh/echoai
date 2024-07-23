@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Echo AI",
-  description: "Echo AI, and AI assistant created in Next.js using Vercel SDK, Groq, Cartesia and VAD",
+  description: "Echo AI, and AI assistant created in Next.js using Vercel SDK, Groq and VAD",
 };
 
 export default function RootLayout({
