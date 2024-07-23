@@ -4,7 +4,7 @@ Echo AI is an AI-powered assistant built with Next.js and Groq, hosted on Vercel
 
 ## Live Version
 
-Check out the [live version of Echo AI](https://your-vercel-deployment-url.vercel.app).
+Check out the [live version of Echo AI](https://echo-ai-assistant.vercel.app/).
 
 ## Future Updates
 
