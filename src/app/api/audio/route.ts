@@ -1,5 +1,3 @@
-// src/app/api/audio/route.ts
-
 import { NextResponse } from 'next/server';
 import { ElevenLabsClient } from 'elevenlabs';
 
@@ -18,12 +16,11 @@ export async function POST(request: Request) {
     const { text } = await request.json();
 
     const audioStream = await client.generate({
-      voice: 'Rachel',
+      voice: 'Jessica',
       model_id: 'eleven_turbo_v2_5',
       text,
     });
 
-    // Stream the audio response back to the client
     const audioChunks: Buffer[] = [];
     for await (const chunk of audioStream) {
       audioChunks.push(chunk);
