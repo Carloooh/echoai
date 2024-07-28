@@ -1,9 +1,10 @@
-"use client";
+"use client"
 
 import { useState, useRef, useEffect } from "react";
 import { EnterIcon, LoadingIcon } from "@/app/lib/icons";
 import { toast } from "sonner";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
+import { usePlayer } from "@/app/lib/usePlayer";
 
 type Message = {
   role: "user" | "assistant";
@@ -16,6 +17,8 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isPending, setIsPending] = useState(false);
+
+  const player = usePlayer();
 
   const vad = useMicVAD({
     startOnLoad: true,
@@ -36,6 +39,7 @@ export default function Home() {
       };
     },
     onSpeechEnd: (audio) => {
+      player.stop();
       const wav = utils.encodeWAV(audio);
       const blob = new Blob([wav], { type: "audio/wav" });
       submit(blob);
@@ -104,6 +108,20 @@ export default function Home() {
           latency,
         },
       ]);
+
+      try {
+        if (responseData.audioBuffer) {
+          const audioBuffer = Buffer.from(responseData.audioBuffer, "base64");
+          player.play(new Blob([audioBuffer]), () => {
+            console.log("Audio playback completed.");
+          });
+        } else {
+          throw new Error("Audio buffer is missing");
+        }
+      } catch (audioError) {
+        console.error("Error playing audio:", audioError);
+        toast.error("Error generating voice; TTS API limit likely. Please let the dev know.");
+      }
     } catch (error) {
       console.error("Error submitting data:", error);
       toast.error("An error occurred while submitting your request.");
@@ -156,7 +174,7 @@ export default function Home() {
           </p>
         ) : (
           <p>
-            A fast AI assistant with voice recognition and text input
+            An AI voice assistant with voice recognition
           </p>
         )}
         {vad.loading ? (
