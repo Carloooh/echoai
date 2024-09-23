@@ -10,4 +10,4 @@ Check out the [live version of Echo AI](https://echo-ai-assistant.vercel.app/).
 
 **Postdata**: I'm using the free Elevenlabs API for TTS. If the TTS isn't working, it might have reached the limit. Please tell me so I can renew the API key.
 
-Frontend inspired by [Swift](https://github.com/ai-ng/swift)
+Inspired by [Swift](https://github.com/ai-ng/swift)
